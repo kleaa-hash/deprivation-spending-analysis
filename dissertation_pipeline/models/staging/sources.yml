@@ -1,0 +1,17 @@
+version: 2
+
+sources:
+  - name: raw_data
+    project: deprivation-spending-analysis
+    dataset: raw_data
+    description: "Raw data loaded from official government sources via 01_ingestion.ipynb"
+    
+    tables:
+      - name: raw_imd_2025
+        description: "English Indices of Deprivation 2025 File 10 - Local Authority District Summaries (lower tier) v2. Published by MHCLG under OGL v3.0. Contains 296 local authority districts."
+        
+      - name: raw_revenue_outturn
+        description: "MHCLG Local Authority Revenue Expenditure and Financing - multi-year dataset covering 2017-18 to 2024-25. Published under OGL v3.0. Contains submitted, total, and not-submitted rows - filtering to submitted only happens in staging model."
+
+      - name: raw_population
+        description: "ONS Mid-Year Population Estimates MYE4, Mid-2019 to Mid-2024. 296 English local authority districts. Used as per capita spending denominator (Decision D12). Year-matched: Mid-2019 population denominates 2019-20 spending."

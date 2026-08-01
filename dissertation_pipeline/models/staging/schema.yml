@@ -1,0 +1,27 @@
+version: 2
+
+models:
+  - name: stg_imd_2025
+    description: "Cleaned IMD 2025 staging model. 296 English local authority districts."
+    columns:
+      - name: lad_code
+        tests:
+          - not_null
+          - unique
+
+  - name: stg_population
+    description: "Cleaned ONS population staging model. 296 authorities x 6 years = 1776 rows."
+    columns:
+      - name: population
+        tests:
+          - not_null
+
+  - name: stg_revenue_outturn
+    description: "Filtered Revenue Outturn staging model. Submitted rows only, 2019-20 to 2024-25."
+    columns:
+      - name: lad_code
+        tests:
+          - not_null
+      - name: rs_netcurrtot_net_exp
+        tests:
+          - not_null

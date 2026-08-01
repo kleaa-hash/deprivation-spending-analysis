@@ -1,0 +1,148 @@
+version: 2
+
+models:
+  - name: mart_deprivation_spending
+    description: >
+      Core analytical table joining IMD 2025 deprivation scores, MHCLG Revenue
+      Outturn spending data, and ONS population estimates for 289-292 English
+      local authority districts across financial years 2019-20 to 2024-25.
+      This is the primary table used for all regression, machine learning,
+      and spatial analysis. Every discretionary decision shaping this table
+      is documented in the Discretionary Decisions Catalogue (D1-D12).
+      Inner join between revenue and IMD means only authorities present in
+      both datasets appear here — see D7 for council merger handling.
+      Birmingham (E08000025) absent from 2023-24 and 2024-25 — see D11.
+
+
+    columns:
+      - name: year_ending
+        description: >
+          Financial year end date in YYYYMM format.
+          202003 = financial year ending March 2020 = 2019-20.
+          Range: 202003 to 202503.
+
+      - name: financial_year_start
+        description: >
+          Financial year start as integer (e.g. 2019 for 2019-20).
+          Derived from year_ending. Used to join with population denominators.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['2019', '2020', '2021', '2022', '2023', '2024']
+              quote: false
+
+      - name: lad_code
+        description: >
+          ONS Local Authority District code (2024 boundaries).
+          Format E06, E07, E08, E09. Primary join key across all three
+          source datasets. Inner join means only codes present in both
+          IMD and Revenue Outturn appear here.
+        tests:
+          - not_null
+
+      - name: la_name
+        description: Local authority district name from Revenue Outturn.
+
+      - name: la_class
+        description: >
+          Local authority class from Revenue Outturn
+          (e.g. Unitary Authority, Metropolitan District, London Borough).
+
+      - name: la_subclass
+        description: Local authority subclass from Revenue Outturn.
+
+      - name: imd_score
+        description: >
+          IMD 2025 average score (Decision D3). Continuous measure of
+          overall deprivation. Higher score = more deprived.
+          Source: IMD 2025 File 10 (McLennan et al., 2025).
+          Time-invariant — same value applied to all six financial years.
+          Alternative considered: IMD average rank (ordinal, rejected
+          as less appropriate for linear regression).
+        tests:
+          - not_null
+
+      - name: imd_rank
+        description: >
+          IMD 2025 rank of average score. 1 = most deprived authority.
+          Retained for reference and sensitivity analysis.
+
+      - name: imd_proportion_deprived_10pct
+        description: >
+          Proportion of LSOAs in the authority falling within the most
+          deprived 10 percent nationally. Secondary deprivation measure.
+
+      - name: net_current_expenditure
+        description: >
+          Primary spending variable (Decision D9).
+          RS_netcurrtot_net_exp — net current expenditure total (RS line 749).
+          Includes total service expenditure plus levies, trading account
+          adjustments, housing benefits, and other financing items.
+          Standard measure used in academic literature (Amin-Smith and
+          Phillips 2019, Innes and Tetlow 2015, Fahy et al 2023).
+          Units: thousands of pounds.
+
+      - name: total_service_expenditure
+        description: >
+          Sensitivity spending variable (Decision D9).
+          RS_totsx_net_exp — total service expenditure (RS line 699).
+          Excludes non-service financing items. Approximately 17% lower
+          than net_current_expenditure on average. Correlation between
+          the gap and IMD score is -0.292 — modest, driven by authority
+          type rather than deprivation. Units: thousands of pounds.
+
+      - name: adult_social_care_expenditure
+        description: >
+          Co-primary sensitivity variable (Decision D9).
+          RS_asc_net_exp — adult social care net expenditure.
+          Most directly deprivation-driven service category.
+          Units: thousands of pounds.
+
+      - name: childrens_social_care_expenditure
+        description: >
+          Co-primary sensitivity variable (Decision D9).
+          RS_csc_net_exp — children s social care net expenditure.
+          Most directly deprivation-driven service category alongside ASC.
+          Units: thousands of pounds.
+
+      - name: population
+        description: >
+          ONS mid-year population estimate (Decision D12).
+          Year-matched: Mid-2019 used for 2019-20, Mid-2024 for 2024-25.
+          Source: ONS Mid-Year Population Estimates MYE4 sheet.
+          Alternative considered: single base year — rejected as less
+          accurate for authorities with fast-changing populations.
+        tests:
+          - not_null
+
+      - name: net_current_expenditure_per_capita
+        description: >
+          Primary analytical variable for regression.
+          Net current expenditure divided by population, converted to
+          pounds per person. Units: pounds per person per year.
+        tests:
+          - not_null
+
+      - name: total_service_expenditure_per_capita
+        description: >
+          Sensitivity per capita variable. Total service expenditure
+          per person. Units: pounds per person per year.
+
+      - name: adult_social_care_per_capita
+        description: >
+          Adult social care expenditure per person.
+          Units: pounds per person per year.
+
+      - name: childrens_social_care_per_capita
+        description: >
+          Children s social care expenditure per person.
+          Units: pounds per person per year.
+
+      - name: is_covid_year
+        description: >
+          Boolean flag for COVID-affected years (Decision D6).
+          True for financial_year_start 2020 and 2021 (2020-21 and 2021-22).
+          These years involved exceptional emergency spending unrelated
+          to normal deprivation-driven demand patterns.
+          Used as control variable in regression and for sensitivity
+          analysis excluding COVID years.

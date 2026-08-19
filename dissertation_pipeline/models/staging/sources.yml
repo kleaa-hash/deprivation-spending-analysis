@@ -15,3 +15,6 @@ sources:
 
       - name: raw_population
         description: "ONS Mid-Year Population Estimates MYE4, Mid-2019 to Mid-2024. 296 English local authority districts. Used as per capita spending denominator (Decision D12). Year-matched: Mid-2019 population denominates 2019-20 spending."
+
+      - name: raw_region_lookup
+        description: "ONS Local Authority District to Region December 2024 lookup. 296 English LADs mapped to 9 regions. Used as regional control variable in regression (Decision D18). Published under OGL v3.0."

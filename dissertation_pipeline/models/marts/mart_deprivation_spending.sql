@@ -1,8 +1,9 @@
 -- ============================================================
 -- MODEL: mart_deprivation_spending
--- Purpose: Join IMD deprivation, revenue spending, and population
---          data to produce the core analytical table
--- Sources: stg_imd_2025, stg_revenue_outturn, stg_population
+-- Purpose: Join IMD deprivation, revenue spending, population,
+--          and region data to produce the core analytical table
+-- Sources: stg_imd_2025, stg_revenue_outturn, stg_population,
+--          stg_region_lookup
 -- Key decisions documented:
 --   D3: IMD average score as primary deprivation measure
 --   D4/D11: Revenue Outturn filtered to submitted rows only
@@ -11,6 +12,7 @@
 --   D9: RS_netcurrtot_net_exp as primary spending variable
 --       RS_totsx_net_exp, RS_asc_net_exp, RS_csc_net_exp as sensitivity
 --   D12: Year-matched ONS population denominators
+--   D18: ONS region as control variable in regression
 -- ============================================================
 
 with imd as (
@@ -23,6 +25,10 @@ revenue as (
 
 population as (
     select * from {{ ref('stg_population') }}
+),
+
+region as (
+    select * from {{ ref('stg_region_lookup') }}
 ),
 
 -- Join revenue to population on authority code and year
@@ -72,7 +78,7 @@ revenue_with_pop as (
         and r.financial_year_start = p.financial_year_start
 ),
 
--- Join with IMD deprivation scores
+-- Join with IMD deprivation scores and region
 final as (
     select
         rp.year_ending,
@@ -103,13 +109,22 @@ final as (
         rp.childrens_social_care_per_capita,
 
         -- COVID indicator
-        rp.is_covid_year
+        rp.is_covid_year,
+
+        -- Regional control variable (Decision D18)
+        -- ONS region from December 2024 lookup
+        -- Left join retains all revenue authorities even if region missing
+        r.region_name
 
     from revenue_with_pop rp
     -- Inner join with IMD ensures only authorities
     -- present in both datasets are included (Decision D7)
     inner join imd i
         on rp.lad_code = i.lad_code
+    -- Left join with region to add regional control
+    -- Left not inner to avoid excluding authorities missing from lookup
+    left join region r
+        on rp.lad_code = r.lad_code
 )
 
 select * from final

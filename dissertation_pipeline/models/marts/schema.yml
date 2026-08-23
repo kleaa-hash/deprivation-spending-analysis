@@ -4,15 +4,14 @@ models:
   - name: mart_deprivation_spending
     description: >
       Core analytical table joining IMD 2025 deprivation scores, MHCLG Revenue
-      Outturn spending data, and ONS population estimates for 289-292 English
-      local authority districts across financial years 2019-20 to 2024-25.
-      This is the primary table used for all regression, machine learning,
-      and spatial analysis. Every discretionary decision shaping this table
-      is documented in the Discretionary Decisions Catalogue (D1-D12).
-      Inner join between revenue and IMD means only authorities present in
-      both datasets appear here — see D7 for council merger handling.
+      Outturn spending data, ONS population estimates, and ONS region lookup
+      for 289-292 English local authority districts across financial years
+      2019-20 to 2024-25. This is the primary table used for all regression,
+      machine learning, and spatial analysis. Every discretionary decision
+      shaping this table is documented in the Discretionary Decisions Catalogue
+      (D1-D19). Inner join between revenue and IMD means only authorities
+      present in both datasets appear here — see D7 for council merger handling.
       Birmingham (E08000025) absent from 2023-24 and 2024-25 — see D11.
-
 
     columns:
       - name: year_ending
@@ -47,6 +46,7 @@ models:
         description: >
           Local authority class from Revenue Outturn
           (e.g. Unitary Authority, Metropolitan District, London Borough).
+          Used as control variable in regression (Decision D19).
 
       - name: la_subclass
         description: Local authority subclass from Revenue Outturn.
@@ -146,3 +146,15 @@ models:
           to normal deprivation-driven demand patterns.
           Used as control variable in regression and for sensitivity
           analysis excluding COVID years.
+
+      - name: region_name
+        description: >
+          ONS region name from December 2024 lookup (Decision D18).
+          Nine English regions: North East, North West, Yorkshire and
+          The Humber, East Midlands, West Midlands, East of England,
+          London, South East, South West.
+          Used as control variable in regression to account for systematic
+          regional spending differences unrelated to deprivation.
+          Left join — authorities without a region match will have null.
+        tests:
+          - not_null

@@ -1,0 +1,14 @@
+# Example dbt profile. Copy to ~/.dbt/profiles.yml and set your project ID.
+# Uses OAuth: run `gcloud auth application-default login` first.
+
+dissertation_pipeline:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: oauth
+      project: YOUR_GCP_PROJECT_ID
+      dataset: spending_analysis
+      location: EU
+      threads: 4
+      priority: interactive

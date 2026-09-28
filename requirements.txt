@@ -1,0 +1,13 @@
+dbt-core==1.11.11
+dbt-bigquery
+google-cloud-bigquery
+db-dtypes
+pyarrow
+pandas
+openpyxl
+numpy
+statsmodels
+scikit-learn
+shap
+geopandas
+matplotlib

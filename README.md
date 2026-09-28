@@ -75,9 +75,3 @@ Choices made during the project, including the deprivation measure, council merg
 Licence
 
 Data: Open Government Licence v3.0. Code: available for academic review and reuse with attribution.
-Uploads
-1790594233902_image.png, 1790594100179_image.png
-+10
-Web search
-Memory
-Read · Dissertation
